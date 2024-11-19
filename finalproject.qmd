@@ -1,0 +1,28 @@
+---
+title: "How Teacher Characteristics Correlate with Student Test Scores: Evidence from Texas ESC Region 20"
+author: "Evy Lanai & Alberto Saldarriaga"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+format: pdf
+number-sections: true
+toc: true
+toc-depth: 2
+fontsize: 12pt
+geometry: a4
+documentclass: article
+linkcolor: blue
+header-includes:
+  - \usepackage{fancyhdr}
+  - \pagestyle{fancy}
+  - \fancyhead[L]{Your Document Title}
+  - \fancyhead[R]{Your Name}
+  - \fancyfoot[C]{\thepage}
+---
+
+
+
+
+
+
+
+
+
