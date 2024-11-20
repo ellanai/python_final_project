@@ -18,6 +18,213 @@ header-includes:
   - \fancyfoot[C]{\thepage}
 ---
 
+## General Set Up
+
+### Packages
+
+```{python}
+import pandas as pd
+import warnings 
+warnings.filterwarnings('ignore')
+```
+
+### Loading the df
+
+```{python}
+path = r"C:\Users\msald\OneDrive\Escritorio\UChicago\3. Classes\2425\1. Autum\2. PythonII\project\pooling\student\DSTUD.xlsx"
+df_students = pd.read_excel(path)
+print(df_students.columns) #To confirm variables names
+
+path = r"C:\Users\msald\OneDrive\Escritorio\UChicago\3. Classes\2425\1. Autum\2. PythonII\project\pooling\staff\DSTAF.xlsx"
+df_staff = pd.read_excel(path) 
+print(df_staff.columns) #To confirm variables names
+
+path = r"C:\Users\msald\OneDrive\Escritorio\UChicago\3. Classes\2425\1. Autum\2. PythonII\project\pooling\staar\DSTAAR_ALL.xlsx"
+df_staar = pd.read_excel(path)
+print(df_staar.columns) #To confirm variables names
+```
+
+## Merging the data
+
+```{python}
+df = pd.merge(df_students, df_staff, on="DISTRICT", how="left", suffixes=('', '_drop'))
+df = df.drop(columns=['DISTNAME_drop']) #Drop the duplicate variable
+
+df = pd.merge(df, df_staar, on="DISTRICT", how="left", suffixes=('', '_drop'))
+df = df.drop(columns=['DISTNAME_drop']) #Drop the duplicate variable
+```
+
+## Renaming and keeping variables of interest
+
+```{python}
+# Variables of interest
+rename_dict = {
+    #Levels
+    'DDA00AR01S23R': 'All_ELA_District_Approaches',
+    'DDA00AR01223R': 'All_ELA_District_Meets',
+    'DDA00AR01323R': 'All_ELA_District_Masters',
+    'DDA00AM01S23R': 'All_Math_District_Approaches',
+    'DDA00AM01223R': 'All_Math_District_Meets',
+    'DDA00AM01323R': 'All_Math_District_Masters',
+
+    #Race/Ethnicity    
+    'DDB00AR01S23R': 'All_ELA_AfricanAmerican_Approaches',
+    'DDB00AR01223R': 'All_ELA_AfricanAmerican_Meets',
+    'DDB00AR01323R': 'All_ELA_AfricanAmerican_Masters',
+    'DDB00AM01S23R': 'All_Math_AfricanAmerican_Approaches',
+    'DDB00AM01223R': 'All_Math_AfricanAmerican_Meets',
+    'DDB00AM01323R': 'All_Math_AfricanAmerican_Masters',
+    'DDH00AR01S23R': 'All_ELA_Hispanic_Approaches',
+    'DDH00AR01223R': 'All_ELA_Hispanic_Meets',
+    'DDH00AR01323R': 'All_ELA_Hispanic_Masters',
+    'DDH00AM01S23R': 'All_Math_Hispanic_Approaches',
+    'DDH00AM01223R': 'All_Math_Hispanic_Meets',
+    'DDH00AM01323R': 'All_Math_Hispanic_Masters',
+    'DDW00AR01S23R': 'All_ELA_White_Approaches',
+    'DDW00AR01223R': 'All_ELA_White_Meets',
+    'DDW00AR01323R': 'All_ELA_White_Masters',
+    'DDW00AM01S23R': 'All_Math_White_Approaches',
+    'DDW00AM01223R': 'All_Math_White_Meets',
+    'DDW00AM01323R': 'All_Math_White_Masters',
+
+    #Type-specific Ed
+    'DDS00AR01S23R': 'All_ELA_SpecialEd_Approaches',
+    'DDS00AR01223R': 'All_ELA_SpecialEd_Meets',
+    'DDS00AR01323R': 'All_ELA_SpecialEd_Masters',
+    'DDS00AM01S23R': 'All_Math_SpecialEd_Approaches',
+    'DDS00AM01223R': 'All_Math_SpecialEd_Meets',
+    'DDS00AM01323R': 'All_Math_SpecialEd_Masters',
+    'DDE00AR01S23R': 'All_ELA_EcoDis_Approaches',
+    'DDE00AR01223R': 'All_ELA_EcoDis_Meets',
+    'DDE00AR01323R': 'All_ELA_EcoDis_Masters',
+    'DDE00AM01S23R': 'All_Math_EcoDis_Approaches',
+    'DDE00AM01223R': 'All_Math_EcoDis_Meets',
+    'DDE00AM01323R': 'All_Math_EcoDis_Masters',
+    'DD000AR01S23R': 'All_ELA_EBEL_Approaches',
+    'DD000AR01223R': 'All_ELA_EBEL_Meets',
+    'DD000AR01323R': 'All_ELA_EBEL_Masters',
+    'DD000AM01S23R': 'All_Math_EBEL_Approaches',
+    'DD000AM01223R': 'All_Math_EBEL_Meets',
+    'DD000AM01323R': 'All_Math_EBEL_Masters',
+
+    # Enrollment variables
+    'DPNTALLC': 'Enrollment_Total',
+    'DPNTBLAP': 'Enrollment_AfricanAmerican',
+    'DPNTHISP': 'Enrollment_Hispanic',
+    'DPNTWHIP': 'Enrollment_White',
+    'DPNTFEMP': 'Enrollment_Female',
+    'DPNTMALP': 'Enrollment_Male',
+    'DPNTECOP': 'Enrollment_EcoDis',
+    'DPNTNEDP': 'Enrollment_NonEcoDis',
+    'DPNT504P': 'Enrollment_Sect504',
+    'DPNTBILP': 'Enrollment_EBEL',
+    
+    # Class size variables
+    'DPCTGKGA': 'ClassSize_Kindergarten',
+    'DPCTG01A': 'ClassSize_Grade1',
+    'DPCTG02A': 'ClassSize_Grade2',
+    'DPCTG03A': 'ClassSize_Grade3',
+    'DPCTG04A': 'ClassSize_Grade4',
+    'DPCTG05A': 'ClassSize_Grade5',
+    'DPCTG06A': 'ClassSize_Grade6',
+    
+    # Teacher and staff counts
+    'DPSTTOFC': 'Teacher_Count',
+    'DPSPTOFC': 'ProfessionalSupport_Count',
+    'DPSSTOFC': 'CampusAdmin_Count',
+    'DPSCTOFC': 'CentralAdmin_Count',
+    'DPSECOFC': 'EducationalAides_Count',
+    'DPSRTOFC': 'FullTime_Counselors_Count',
+    'DPSRTOPC': 'PartTime_Counselors_Count',
+    
+    # Teacher demographics
+    'DPSTBLFP': 'Teachers_AfricanAmerican',
+    'DPSTHIFP': 'Teachers_Hispanic',
+    'DPSTWHFP': 'Teachers_White',
+    'DPSTMAFP': 'Teachers_Male',
+    'DPSTFEFP': 'Teachers_Female',
+    
+    # Teacher education
+    'DPSTNOFP': 'Teachers_NoDegree',
+    'DPSTBAFP': 'Teachers_Bachelors',
+    'DPSTMSFP': 'Teachers_Masters',
+    'DPSTPHFP': 'Teachers_Doctorate',
+    
+    # Teacher experience
+    'DPST00FP': 'Experience_None',
+    'DPST01FP': 'Experience_1to5',
+    'DPST06FP': 'Experience_6to10',
+    'DPST11FP': 'Experience_11to20',
+    
+    # Principal and teacher experience (years)
+    'DPSHEXPA': 'Years_Experience_Principals',
+    'DPSTEXPA': 'Years_Experience_Teachers',
+    
+    # Teacher salaries by experience
+    'DPST00SA': 'Salary_Experience_None',
+    'DPST01SA': 'Salary_Experience_1to5',
+    'DPST06SA': 'Salary_Experience_6to10',
+    'DPST11SA': 'Salary_Experience_11to20',
+    'DPST21SA': 'Salary_Experience_21to30',
+    'DPST30SA': 'Salary_Experience_Over30',
+    
+    # Salaries by role
+    'DPSTTOSA': 'Salary_Teachers',
+    'DPSUTOSA': 'Salary_ProfessionalSupport',
+    'DPSSTOSA': 'Salary_CampusAdmin',
+    'DPSCTOSA': 'Salary_CentralAdmin',
+    
+    # Turnover
+    'DPSTURNR': 'Turnover_Teachers'
+}
+
+# Renombrar las columnas en el DataFrame
+df.rename(columns=rename_dict, inplace=True)
+
+```
+
+```{python}
+variables_to_keep = [
+    'DISTRICT', 'DISTNAME',
+    'All_ELA_District_Approaches', 'All_ELA_District_Meets', 'All_ELA_District_Masters',
+    'All_Math_District_Approaches', 'All_Math_District_Meets', 'All_Math_District_Masters',
+    'All_ELA_AfricanAmerican_Approaches', 'All_ELA_AfricanAmerican_Meets', 'All_ELA_AfricanAmerican_Masters',
+    'All_Math_AfricanAmerican_Approaches', 'All_Math_AfricanAmerican_Meets', 'All_Math_AfricanAmerican_Masters',
+    'All_ELA_Hispanic_Approaches', 'All_ELA_Hispanic_Meets', 'All_ELA_Hispanic_Masters',
+    'All_Math_Hispanic_Approaches', 'All_Math_Hispanic_Meets', 'All_Math_Hispanic_Masters',
+    'All_ELA_White_Approaches', 'All_ELA_White_Meets', 'All_ELA_White_Masters',
+    'All_Math_White_Approaches', 'All_Math_White_Meets', 'All_Math_White_Masters',
+    'All_ELA_SpecialEd_Approaches', 'All_ELA_SpecialEd_Meets', 'All_ELA_SpecialEd_Masters',
+    'All_Math_SpecialEd_Approaches', 'All_Math_SpecialEd_Meets', 'All_Math_SpecialEd_Masters',
+    'All_ELA_EcoDis_Approaches', 'All_ELA_EcoDis_Meets', 'All_ELA_EcoDis_Masters',
+    'All_Math_EcoDis_Approaches', 'All_Math_EcoDis_Meets', 'All_Math_EcoDis_Masters',
+    'All_ELA_EBEL_Approaches', 'All_ELA_EBEL_Meets', 'All_ELA_EBEL_Masters',
+    'All_Math_EBEL_Approaches', 'All_Math_EBEL_Meets', 'All_Math_EBEL_Masters',
+    'Enrollment_Total', 'Enrollment_AfricanAmerican', 'Enrollment_Hispanic', 'Enrollment_White',
+    'Enrollment_Female', 'Enrollment_Male', 'Enrollment_EcoDis', 'Enrollment_NonEcoDis',
+    'Enrollment_Sect504', 'Enrollment_EBEL',
+    'ClassSize_Kindergarten', 'ClassSize_Grade1', 'ClassSize_Grade2', 'ClassSize_Grade3',
+    'ClassSize_Grade4', 'ClassSize_Grade5', 'ClassSize_Grade6',
+    'Teacher_Count', 'ProfessionalSupport_Count', 'CampusAdmin_Count', 'CentralAdmin_Count',
+    'EducationalAides_Count', 'FullTime_Counselors_Count', 'PartTime_Counselors_Count',
+    'Teachers_AfricanAmerican', 'Teachers_Hispanic', 'Teachers_White', 'Teachers_Male', 'Teachers_Female',
+    'Teachers_NoDegree', 'Teachers_Bachelors', 'Teachers_Masters', 'Teachers_Doctorate',
+    'Experience_None', 'Experience_1to5', 'Experience_6to10', 'Experience_11to20',
+    'Years_Experience_Principals', 'Years_Experience_Teachers',
+    'Salary_Experience_None', 'Salary_Experience_1to5', 'Salary_Experience_6to10',
+    'Salary_Experience_11to20', 'Salary_Experience_21to30', 'Salary_Experience_Over30',
+    'Salary_Teachers', 'Salary_ProfessionalSupport', 'Salary_CampusAdmin', 'Salary_CentralAdmin',
+    'Turnover_Teachers'
+]
+
+df = df[variables_to_keep]
+```
+
+```{python}
+df.to_csv('df.csv', index=False) #Save the df in our github repo
+```
+
+
 
 
 
