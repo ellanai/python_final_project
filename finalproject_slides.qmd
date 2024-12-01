@@ -27,14 +27,14 @@ import altair as alt
 
 # Background & Motivation
 ## Teachers & Student Success
-- 
-- 
-- 
+- A teacher's quality can greatly influence students' academic outcomes.
+- Characteristics such as having an advanced degree or more years of teaching experience may contribute to higher-quality teaching.
+- Additionally, schools may perform better overall if they can maintain high rates of teacher retention, as teacher turnover can negatively impact students.
 
 ## Texas Education Service Center 20
-- 
-- 
-- 
+- We draw from public, school-level data in one of Texas' 20 education regions -- ESC Region 20.
+- The most urban part of this region is San Antonio, Texas (population: 1.5 million), but there are extremely rural parts as well, in addition to counties that border Mexico.
+- This region provides diverse insights into the relatonship between teacher characteristics and student outcomes in a wide range of contexts.
 
 ## Data: Variables and Metrics
 - 

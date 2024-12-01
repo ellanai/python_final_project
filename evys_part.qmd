@@ -1,0 +1,16 @@
+---
+title: "Evy's Data Analysis for Python Final Project"
+format: pdf
+---
+
+
+```{python}
+import pandas as pd
+import altair as alt
+```
+
+```{python}
+path = "/Users/evylanai/Documents/GitHub/python_final_project/df.csv"
+
+```
+
