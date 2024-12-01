@@ -22,6 +22,8 @@ format:
 #| eval: true
 import pandas as pd
 import altair as alt
+from IPython.core.display import display, HTML
+
 ```
 
 
@@ -41,21 +43,36 @@ import altair as alt
 - 
 - 
 
-## Slide 4 Title
+## How does teacher experience level affect test scores?
+In these plots, each data point represents a school district.
+We can see that there is a positive correlation between teacher years of experience and percentage of student meeting grade level benchmarks on both math and reading STAAR tests, the most prominent standardized test in Texas for grades 3-12.
+```{python}
+image_path = "/Users/evylanai/Documents/GitHub/python_final_project/combined_experience_scatter.png"
+display(HTML(f'<img src="{image_path}" alt="Your Image" width="500" height="300">'))
+```
 
 
+## How do different degree types affect math test scores?
+As you can see, there is no clear correlation between types of degree and proficiency on math test scores. Teachers who have a Master's degree appear to have no advantage over teachers with simply a Bachelor's degree.
+```{python}
+image_path = "/Users/evylanai/Documents/GitHub/python_final_project/degrees_math_scatter.png"
+display(HTML(f'<img src="{image_path}" alt="Your Image" width="500" height="300">'))
+```
 
-## Slide 5 Title
+## How do different degree types affect reading test scores?
+This proves true for reading test scores as well, underlining the idea that teacher experience, rather than advanced degree, is most indicative of a high-quality teacher.
+```{python}
+image_path = "/Users/evylanai/Documents/GitHub/python_final_project/degrees_ELA_scatter.png"
+display(HTML(f'<img src="{image_path}" alt="Your Image" width="500" height="300">'))
+```
 
 
-
-## Slide 6 Title
-
-
-
-## Slide 7 Title
-
-
+## Is it important for teachers to have a degree at all?
+However, it is important to note that districts with more teachers *without any degree* tend to produce lower test score averages. Although this represents only a small percentage of districts in the region, it provides support for the idea that a college degree is indicative of high-level teaching.
+```{python}
+image_path = "/Users/evylanai/Documents/GitHub/python_final_project/nodegree_STAAR_scatter.png"
+display(HTML(f'<img src="{image_path}" alt="Your Image" width="500" height="300">'))
+```
 
 ## Slide 8 Title
 
