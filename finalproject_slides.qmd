@@ -1,0 +1,74 @@
+---
+title: "How Teacher Characteristics Correlate with Student Test Scores: Evidence from Texas ESC Region 20"
+author: "Evy Lanay and Alberto Saldarriaga"
+date: today
+date-format: long
+format: 
+    beamer:
+        eval: false
+        echo: true
+        aspectratio: 169
+        theme: default
+        toc: false
+        header-includes:
+            \setbeamertemplate{footline}[frame number]
+            \usepackage{fvextra}
+            \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+            \DefineVerbatimEnvironment{OutputCode}{Verbatim}{breaklines,commandchars=\\\{\}}
+---
+
+```{python}
+#| echo: false
+#| eval: true
+import pandas as pd
+import altair as alt
+```
+
+
+# Background & Motivation
+## Teachers & Student Success
+- 
+- 
+- 
+
+## Texas Education Service Center 20
+- 
+- 
+- 
+
+## Data: Variables and Metrics
+- 
+- 
+- 
+
+## Slide 4 Title
+
+
+
+## Slide 5 Title
+
+
+
+## Slide 6 Title
+
+
+
+## Slide 7 Title
+
+
+
+## Slide 8 Title
+
+
+
+## Slide 9 Title
+
+
+
+## Slide 10 Title
+
+
+
+
+
+
