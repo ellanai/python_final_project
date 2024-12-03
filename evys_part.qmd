@@ -10,7 +10,197 @@ import altair as alt
 ```
 
 ```{python}
-path = "/Users/evylanai/Documents/GitHub/python_final_project/df.csv"
+import warnings
 
+# Suppress specific FutureWarnings
+warnings.filterwarnings("ignore", category=FutureWarning)
 ```
+
+```{python}
+path = r"/Users/evylanai/Documents/GitHub/python_final_project/df.csv"
+df = pd.read_csv(path)
+```
+
+Scatter plot for avg. teacher years of experience vs. STAAR math scores
+```{python}
+# Create boolean variable indicating whether 20% or more of teachers have no experience
+df[">20 Percent New Teachers"] = df["Experience_None"] >=20
+
+# Plot math proficiency against average teacher experience
+experience_math_scatter = alt.Chart(df).mark_circle(size=50).encode(
+    x = alt.X("Years_Experience_Teachers:Q", title = "Average Teacher's Years of Experience"),
+    y = alt.Y("All_Math_District_Meets:Q", title = "% of Student Meeting Grade Level in Math"),
+    color=alt.Color(
+        '>20 Percent New Teachers:N',
+        scale=alt.Scale(domain=[True, False], range=['red', 'blue']),
+        legend=alt.Legend(title=">20% New Teachers"))
+).properties(
+    title = "Teachers Experience vs. Math Proficiency",
+    width = 350,
+    height = 400
+)
+
+# Line of best fit
+experience_math_LBF = alt.Chart(df).transform_regression(
+    'Years_Experience_Teachers', 'All_Math_District_Meets'
+).mark_line(color='black').encode(
+    x='Years_Experience_Teachers:Q',
+    y='All_Math_District_Meets:Q'
+)
+
+# Add line to plot
+experience_math_scatter = experience_math_scatter + experience_math_LBF
+
+# Save and show plot
+experience_math_scatter.save('experience_math_scatter.png', format='png')
+experience_math_scatter
+```
+
+Scatter plot for avg. teacher years of experience vs. STAAR reading scores
+```{python}
+# Plot ELA proficiency against average teacher experience
+experience_ELA_scatter = alt.Chart(df).mark_circle(size=50).encode(
+    x = alt.X("Years_Experience_Teachers:Q", title = "Average Teacher's Years of Experience"),
+    y = alt.Y("All_ELA_District_Meets:Q", title = "% of Student Meeting Grade Level in Reading"),
+    color=alt.Color(
+        '>20 Percent New Teachers:N',
+        scale=alt.Scale(domain=[True, False], range=['red', 'blue']),
+        legend=alt.Legend(title=">20% New Teachers")
+    )
+).properties(
+    title = "Teachers Experience vs. Reading Proficiency",
+    width = 350,
+    height = 400
+)
+
+# Line of best fit
+experience_ELA_LBF = alt.Chart(df).transform_regression(
+    'Years_Experience_Teachers', 'All_ELA_District_Meets'
+).mark_line(color='black').encode(
+    x='Years_Experience_Teachers:Q',
+    y='All_ELA_District_Meets:Q'
+)
+
+# Add line to plot
+experience_ELA_scatter = experience_ELA_scatter + experience_ELA_LBF
+
+# Save and show plot
+experience_ELA_scatter.save('experience_ELA_scatter.png', format='png')
+experience_ELA_scatter
+```
+
+```{python}
+combined_experience_scatter = experience_math_scatter | experience_ELA_scatter
+
+combined_experience_scatter.save('combined_experience_scatter.png', format='png')
+combined_experience_scatter
+```
+
+Scatter plot for teacher degrees vs. STAAR math scores
+```{python}
+# Combine Bachelor's and Master's in a single chart
+degrees_math_scatter = alt.Chart(df).transform_fold(
+    ['Teachers_Bachelors', 'Teachers_Masters'],  
+    as_=['Degree_Type', 'Percentage'] 
+).transform_calculate(
+    Degree_Type_Label=alt.expr.if_(
+        alt.datum.Degree_Type == 'Teachers_Bachelors',
+        '% of Teachers with Bachelors',
+        '% of Teachers with Masters'
+    )
+).mark_circle(size=50).encode(
+    x=alt.X('Percentage:Q', title='% Teachers with Degree'),
+    y=alt.Y('All_Math_District_Meets:Q', title='% Students Meeting Grade Level in Math'),
+    color=alt.Color(
+        'Degree_Type_Label:N',  
+        scale=alt.Scale(range=['blue', 'green']), 
+        legend=alt.Legend(title='Degree Type')
+    ),
+    tooltip=['Degree_Type_Label:N', 'Percentage:Q', 'All_Math_District_Meets:Q']
+).properties(
+    title='Math Proficiency vs. Teachers with Bachelor\'s vs. Master\'s Degrees',
+    width=600,
+    height=400
+)
+
+# Save and show plot
+degrees_math_scatter.save('degrees_math_scatter.png', format='png')
+degrees_math_scatter
+```
+
+
+Scatter plot for teacher degrees vs. STAAR ELA scores
+```{python}
+# Combine Bachelor's and Master's in a single chart
+degrees_ELA_scatter = alt.Chart(df).transform_fold(
+    ['Teachers_Bachelors', 'Teachers_Masters'],  
+    as_=['Degree_Type', 'Percentage'] 
+).transform_calculate(
+    Degree_Type_Label=alt.expr.if_(
+        alt.datum.Degree_Type == 'Teachers_Bachelors',
+        '% of Teachers with Bachelors',
+        '% of Teachers with Masters'
+    )
+).mark_circle(size=50).encode(
+    x=alt.X('Percentage:Q', title='% Teachers with Degree'),  
+    y=alt.Y('All_ELA_District_Meets:Q', title='% Students Meeting Grade Level in Reading'),
+    color=alt.Color(
+        'Degree_Type_Label:N',  
+        scale=alt.Scale(range=['blue', 'green']), 
+        legend=alt.Legend(title='Degree Type')
+    ),
+    tooltip=['Degree_Type_Label:N', 'Percentage:Q', 'All_ELA_District_Meets:Q']
+).properties(
+    title='Reading Proficiency vs. Teachers with Bachelor\'s vs. Master\'s Degrees',
+    width=600,
+    height=400
+)
+
+# Save and show plot
+degrees_ELA_scatter.save('degrees_ELA_scatter.png', format='png')
+degrees_ELA_scatter
+```
+
+
+Scatterplot for math and reading STAAR scores vs. % of teachers with no degrees
+```{python}
+nodegree_STAAR_scatter = alt.Chart(df).transform_fold(
+    ['All_ELA_District_Meets', 'All_Math_District_Meets'], 
+    as_=['Subject', 'Percentage_Meeting_Grade_Level']
+).transform_calculate(
+    Subject_Label=alt.expr.if_(
+        alt.datum.Subject == 'All_ELA_District_Meets',
+        'Reading',  
+        'Math' 
+    )
+).mark_circle(size=50).encode(
+    x=alt.X('Teachers_NoDegree:Q', title='% Teachers with No Degree'),  # X-axis
+    y=alt.Y('Percentage_Meeting_Grade_Level:Q', title='% Students Meeting Grade Level'),
+    color=alt.Color(
+        'Subject_Label:N',  
+        scale=alt.Scale(range=['red', 'blue']),  
+        legend=alt.Legend(title='Subject')
+    ),
+    tooltip=['Subject_Label:N', 'Teachers_NoDegree:Q', 'Percentage_Meeting_Grade_Level:Q']
+).properties(
+    title='Student Proficiency vs. % Teachers with No Degree (ELA vs Math)',
+    width=600,
+    height=400
+)
+
+# Save and show plot
+nodegree_STAAR_scatter.save('nodegree_STAAR_scatter.png', format='png')
+nodegree_STAAR_scatter
+```
+
+
+
+
+
+
+
+
+
+
+
 
