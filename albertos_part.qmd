@@ -1,0 +1,227 @@
+---
+title: "Alberto Python data analysis"
+format: pdf
+---
+
+1. Packages
+```{python}
+import pandas as pd
+import altair as alt
+import geopandas as gpd
+import matplotlib.pyplot as plt
+
+import warnings
+# Suppress specific FutureWarnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+```
+
+2. Loading dfs
+```{python}
+# Loading the shapefile
+path = r"C:\Users\msald\OneDrive\Escritorio\UChicago\3. Classes\2425\1. Autum\2. PythonII\project\School_Districts_2024\School_Districts_2024.shp"
+gdf = gpd.read_file(path)
+
+# Loading our df
+path = r"C:\Users\msald\OneDrive\Documents\GitHub\python_final_project\df.csv"
+df = pd.read_csv(path)
+```
+
+3. Choropleth: Identifying districts by Teacher Turnover rate 
+```{python}
+# Merge
+## First, we renamed our variable for the merge
+df.rename(columns={"DISTRICT": "DISTRICT_N"}, inplace=True)
+
+# Perform the merge
+merged = gpd.GeoDataFrame(
+    pd.merge(df, gdf, on="DISTRICT_N", how="inner")
+)
+
+merged = merged.drop_duplicates(subset=['DISTRICT_N'], keep='first')
+
+#Choropleth
+
+# Step 1: Filter districts with turnover higher than 30%
+high_turnover = merged[merged['Turnover_Teachers'] > 30]
+
+# Step 2: Plot the choropleth map
+fig, ax = plt.subplots(1, 1, figsize=(12, 8))
+merged.plot(column='Turnover_Teachers', cmap='YlOrRd', legend=True, ax=ax, edgecolor='black')
+
+# Step 3: Overlay district names
+for x, y, label in zip(high_turnover.geometry.centroid.x, 
+                       high_turnover.geometry.centroid.y, 
+                       high_turnover['DISTNAME']):  # Replace 'DISTNAME' with the column for district names
+    ax.text(x, y, label, fontsize=10, ha='center', color='black', weight='bold')
+
+# Step 4: Add title and other customizations
+ax.set_title("Teacher Turnover Rate by District (Turnover > 30%)", fontsize=16)
+ax.axis('off')
+
+# Save
+plt.savefig('map_teacher_turnover.png', format='png', bbox_inches='tight')
+plt.show()
+
+```
+
+
+4. Ranking chart: Districts with high teacher turnover and students outcomes
+```{python}
+filtered_df = df[df['Turnover_Teachers'] > 30]
+
+# Reshape the DataFrame using pd.melt()
+reshaped_df = pd.melt(
+    filtered_df,  # Replace df with the name of your DataFrame
+    id_vars=["DISTRICT_N", "DISTNAME"],  # Columns to keep (district identifiers)
+    value_vars=["All_Math_District_Meets", "All_ELA_District_Meets"],  # Columns to reshape
+    var_name="TEST",  # New column name for the reshaped variables
+    value_name="PERCENTAGE_STUDENTS"  # New column name for the values
+)
+
+# Rename values for better readability
+reshaped_df["TEST"] = reshaped_df["TEST"].replace({
+    "All_Math_District_Meets": "Math",
+    "All_ELA_District_Meets": "ELA"
+})
+
+# Create a bubble chart using Altair
+bubble_chart = alt.Chart(reshaped_df).mark_circle().encode(
+    x=alt.X(
+        "TEST:N",
+        title="Percentage of Students Meeting Grade Level in Math and ELA",
+        axis=alt.Axis(labelAngle=0, labelPadding=20)  
+    ),
+    y=alt.Y(
+        "DISTNAME:N",
+        title="District Name",
+        sort="-x"
+    ),
+    size=alt.Size(
+        "PERCENTAGE_STUDENTS:Q",
+        title="Percentage of Students Meeting Grade Level",
+        legend=alt.Legend(
+            title="Percentage Range",
+            orient="right",
+            titleFontSize=14,
+            values=[10, 40, 60, 80, 100],
+            symbolStrokeColor="black",  
+            symbolFillColor="white",   
+            symbolStrokeWidth=1.5      
+        )
+    ),
+    color=alt.Color(
+        "TEST:N",
+        scale=alt.Scale(
+            range=["#FF5733", "#33CFFF"]
+        ),
+        legend=None
+    ),
+    tooltip=["DISTNAME:N", "TEST:N", "PERCENTAGE_STUDENTS:Q"]
+).properties(
+    title=alt.TitleParams(
+        text="Districts with High Teacher Turnover by Students Outcomes (Math and ELA)",
+        fontSize=16,
+        fontWeight="bold"
+    ),
+    width=500,  
+    height=400
+).configure_axis(
+    labelFontSize=14,  
+    titleFontSize=16   
+).configure_legend(
+    titleFontSize=14,
+    labelFontSize=12
+).configure_view(
+    strokeOpacity=0  
+)
+
+bubble_chart.show()
+
+# Save
+bubble_chart.save('bubble_ranking_districts.png', format='png')
+
+```
+
+5. Teacher turnover, years of experience and salary
+
+```{python}
+# Step 1: Create the `Experience_Range` categorical variable
+def categorize_experience(value):
+    """
+    Categorizes teacher experience into predefined ranges.
+    """
+    if value == 0:
+        return "None"
+    elif 1 <= value <= 5:
+        return "1 to 5"
+    elif 5 < value <= 10:
+        return "6 to 10"
+    elif 10 < value <= 15:
+        return "11 to 15"
+    elif 15 < value <= 20:
+        return "16 to 20"
+    elif value > 20:
+        return ">20"
+    else:
+        return "Unknown"
+
+
+# Apply the function to create the `Experience_Range` column
+df['Experience_Range'] = df['Years_Experience_Teachers'].apply(
+    categorize_experience)
+
+# Step 2: Create the Bubble Chart
+bubble_chart_2 = alt.Chart(df).mark_circle().encode(
+    x=alt.X(
+        "Experience_Range:N",
+        title="Teacher's Years of Experience",
+        sort=["None", "1 to 5", "6 to 10", "11 to 15", "16 to 20", ">20"],
+        axis=alt.Axis(labelAngle=0, labelPadding=20)
+    ),
+    y=alt.Y(
+        "Turnover_Teachers:Q",
+        title="Teacher Turnover Rate (%)"
+    ),
+    size=alt.Size(
+        "Salary_Teachers:Q",
+        title="Average Salary ($)",
+        scale=alt.Scale(domain=[40000, 70000], range=[50, 700]),  # Corrected with `scale`
+        legend=alt.Legend(
+            title="Salary ($)",
+            orient="right",
+            titleFontSize=14,
+            values=[40000, 45000, 50000, 55000 , 60000, 70000],
+            symbolStrokeColor="black",
+            symbolFillColor="white",
+            symbolStrokeWidth=1.5
+        )
+    ),
+    color=alt.Color(
+        "Experience_Range:N",
+        legend=None  # Remove legend for color
+    ),
+    tooltip=[
+        "DISTNAME:N",  # Display district name in the tooltip
+        "Years_Experience_Teachers:Q",  # Display years of experience in the tooltip
+        "Turnover_Teachers:Q",  # Display teacher turnover rate in the tooltip
+        "Salary_Teachers:Q"  # Display average salary in the tooltip
+    ]
+).properties(
+    title="Teacher Turnover Rate by Teacher's Years of Experience and Salary",
+    width=500,
+    height=400
+).configure_axis(
+    labelFontSize=14,  # Font size for axis labels
+    titleFontSize=16  # Font size for axis titles
+).configure_legend(
+    titleFontSize=14,  # Font size for legend title
+    labelFontSize=12  # Font size for legend labels
+)
+
+# Step 3: Show the Bubble Chart
+bubble_chart_2.show()
+
+# Save
+bubble_chart_2.save('bubble_teacher_exp_turnover.png', format='png')
+
+```
