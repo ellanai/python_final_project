@@ -21,6 +21,7 @@ path = r"/Users/evylanai/Documents/GitHub/python_final_project/df.csv"
 df = pd.read_csv(path)
 ```
 
+
 Scatter plot for avg. teacher years of experience vs. STAAR math scores
 ```{python}
 # Create boolean variable indicating whether 20% or more of teachers have no experience
@@ -29,7 +30,7 @@ df[">20 Percent New Teachers"] = df["Experience_None"] >=20
 # Plot math proficiency against average teacher experience
 experience_math_scatter = alt.Chart(df).mark_circle(size=50).encode(
     x = alt.X("Years_Experience_Teachers:Q", title = "Average Teacher's Years of Experience"),
-    y = alt.Y("All_Math_District_Meets:Q", title = "% of Student Meeting Grade Level in Math"),
+    y = alt.Y("All_Math_District_Meets:Q", title = "% of Students Meeting Grade Level in Math"),
     color=alt.Color(
         '>20 Percent New Teachers:N',
         scale=alt.Scale(domain=[True, False], range=['red', 'blue']),
@@ -61,7 +62,7 @@ Scatter plot for avg. teacher years of experience vs. STAAR reading scores
 # Plot ELA proficiency against average teacher experience
 experience_ELA_scatter = alt.Chart(df).mark_circle(size=50).encode(
     x = alt.X("Years_Experience_Teachers:Q", title = "Average Teacher's Years of Experience"),
-    y = alt.Y("All_ELA_District_Meets:Q", title = "% of Student Meeting Grade Level in Reading"),
+    y = alt.Y("All_ELA_District_Meets:Q", title = "% of Students Meeting Grade Level in Reading"),
     color=alt.Color(
         '>20 Percent New Teachers:N',
         scale=alt.Scale(domain=[True, False], range=['red', 'blue']),
@@ -110,7 +111,7 @@ degrees_math_scatter = alt.Chart(df).transform_fold(
     )
 ).mark_circle(size=50).encode(
     x=alt.X('Percentage:Q', title='% Teachers with Degree'),
-    y=alt.Y('All_Math_District_Meets:Q', title='% Students Meeting Grade Level in Math'),
+    y=alt.Y('All_Math_District_Meets:Q', title='% of Students Meeting Grade Level in Math'),
     color=alt.Color(
         'Degree_Type_Label:N',  
         scale=alt.Scale(range=['blue', 'green']), 
@@ -143,7 +144,7 @@ degrees_ELA_scatter = alt.Chart(df).transform_fold(
     )
 ).mark_circle(size=50).encode(
     x=alt.X('Percentage:Q', title='% Teachers with Degree'),  
-    y=alt.Y('All_ELA_District_Meets:Q', title='% Students Meeting Grade Level in Reading'),
+    y=alt.Y('All_ELA_District_Meets:Q', title='% of Students Meeting Grade Level in Reading'),
     color=alt.Color(
         'Degree_Type_Label:N',  
         scale=alt.Scale(range=['blue', 'green']), 
@@ -175,7 +176,7 @@ nodegree_STAAR_scatter = alt.Chart(df).transform_fold(
     )
 ).mark_circle(size=50).encode(
     x=alt.X('Teachers_NoDegree:Q', title='% Teachers with No Degree'),  # X-axis
-    y=alt.Y('Percentage_Meeting_Grade_Level:Q', title='% Students Meeting Grade Level'),
+    y=alt.Y('Percentage_Meeting_Grade_Level:Q', title='% of Students Meeting Grade Level'),
     color=alt.Color(
         'Subject_Label:N',  
         scale=alt.Scale(range=['red', 'blue']),  
