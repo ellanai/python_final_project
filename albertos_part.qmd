@@ -39,6 +39,10 @@ merged = gpd.GeoDataFrame(
 
 merged = merged.drop_duplicates(subset=['DISTRICT_N'], keep='first')
 
+# Calculate and print the average turnover for districts below 30%
+below_30_avg_turnover = merged[merged['Turnover_Teachers'] <= 30]['Turnover_Teachers'].mean()
+print(f"Average Teacher Turnover Rate for districts below 30%: {below_30_avg_turnover:.2f}%")
+
 #Choropleth
 
 # Step 1: Filter districts with turnover higher than 30%
@@ -77,7 +81,10 @@ ax.axis('off')
 plt.savefig('map_teacher_turnover.png', format='png', bbox_inches='tight')
 plt.show()
 
+
 ```
+
+4. Ranking chart: Districts with high teacher turnover and students outcomes
 
 ```{python}
 high_turnover_df = df[df['Turnover_Teachers'] > 30]
@@ -121,12 +128,16 @@ rest_row = pd.DataFrame({
 
 # Append the "Rest" row to the reshaped DataFrame
 filtered_df = pd.concat([high_turnover_df, rest_row], ignore_index=True)
-```
 
+# Update the Above_Rest column to handle the "Rest" row separately
+filtered_df['Above_Rest'] = filtered_df.apply(
+    lambda row: "Rest" if row['DISTNAME'] == "Rest" else (
+        "Above Rest" if row['PERCENTAGE_STUDENTS'] > rest_row[rest_row['TEST'] == row['TEST']]['PERCENTAGE_STUDENTS'].values[0] else "Below Rest"
+    ),
+    axis=1
+)
 
-4. Ranking chart: Districts with high teacher turnover and students outcomes
-```{python}
-# Create a bubble chart using Altair
+# Create a bubble chart using Altair with conditional coloring
 bubble_chart = alt.Chart(filtered_df).mark_circle().encode(
     x=alt.X(
         "TEST:N",
@@ -153,13 +164,18 @@ bubble_chart = alt.Chart(filtered_df).mark_circle().encode(
         )
     ),
     color=alt.Color(
-        "TEST:N",
+        "Above_Rest:N",
         scale=alt.Scale(
-            range=["#FF5733", "#33CFFF"]
+            domain=["Above Rest", "Below Rest", "Rest"],
+            range=["green", "red", "grey"]
         ),
-        legend=None
+        legend=alt.Legend(
+            title="Comparative Performance",
+            titleFontSize=14,
+            labelFontSize=12
+        )
     ),
-    tooltip=["DISTNAME:N", "TEST:N", "PERCENTAGE_STUDENTS:Q"]
+    tooltip=["DISTNAME:N", "TEST:N", "PERCENTAGE_STUDENTS:Q", "Above_Rest:N"]
 ).properties(
     title=alt.TitleParams(
         text="Districts with High Teacher Turnover by Students Outcomes (Math and ELA)",
@@ -182,13 +198,16 @@ bubble_chart.show()
 
 # Save
 bubble_chart.save('bubble_ranking_districts.png', format='png')
-
 ```
 
 5. Teacher turnover, years of experience and salary
 
 ```{python}
-# Step 1: Create the `Experience_Range` categorical variable
+# Filter the DataFrame for the variables of interest
+filtered_df = df[["Years_Experience_Teachers", "Turnover_Teachers", "Salary_Teachers", "DISTNAME"]].copy()
+
+
+# Create the `Experience_Range` column using the categorize_experience function
 def categorize_experience(value):
     """
     Categorizes teacher experience into predefined ranges.
@@ -208,13 +227,25 @@ def categorize_experience(value):
     else:
         return "Unknown"
 
+filtered_df["Experience_Range"] = filtered_df["Years_Experience_Teachers"].apply(categorize_experience)
 
-# Apply the function to create the `Experience_Range` column
-df['Experience_Range'] = df['Years_Experience_Teachers'].apply(
-    categorize_experience)
+# Group by Experience_Range and calculate average salary and turnover rate
+group_averages = filtered_df.groupby("Experience_Range").agg(
+    Avg_Salary=("Salary_Teachers", "mean"),
+    Avg_Turnover=("Turnover_Teachers", "mean")
+).reset_index()
 
-# Step 2: Create the Bubble Chart
-bubble_chart_2 = alt.Chart(df).mark_circle().encode(
+# Ensure the merge adds the average salary and turnover columns
+filtered_df = filtered_df.merge(group_averages, on="Experience_Range", how="left")
+
+# Create color column: green if above average, red if below
+filtered_df["Color"] = filtered_df.apply(
+    lambda row: "Above Category's Average" if row["Salary_Teachers"] >= row["Avg_Salary"] else "Below Category's Average",
+    axis=1
+)
+
+# Bubble chart
+bubble_chart_2 = alt.Chart(filtered_df).mark_circle().encode(
     x=alt.X(
         "Experience_Range:N",
         title="Teacher's Years of Experience",
@@ -228,53 +259,58 @@ bubble_chart_2 = alt.Chart(df).mark_circle().encode(
     size=alt.Size(
         "Salary_Teachers:Q",
         title="Average Salary ($)",
-        scale=alt.Scale(domain=[40000, 70000], range=[50, 700]),  # Corrected with `scale`
+        scale=alt.Scale(domain=[45000, 70000], range=[50, 2000]),
         legend=alt.Legend(
             title="Salary ($)",
             orient="right",
             titleFontSize=14,
-            values=[40000, 45000, 50000, 55000 , 60000, 70000],
+            values=[45000, 50000, 52000, 55000, 60000, 65000, 70000],
             symbolStrokeColor="black",
             symbolFillColor="white",
             symbolStrokeWidth=1.5
         )
     ),
     color=alt.Color(
-        "Experience_Range:N",
-        legend=None  # Remove legend for color
+        "Color:N",
+        scale=alt.Scale(domain=["Above Category's Average", "Below Category's Average"], range=["green", "red"]),
+        legend=alt.Legend(
+            title="Salary Comparison",
+            titleFontSize=14,
+            labelFontSize=12
+        )
     ),
     tooltip=[
-        "DISTNAME:N",  # Display district name in the tooltip
-        "Years_Experience_Teachers:Q",  # Display years of experience in the tooltip
-        "Turnover_Teachers:Q",  # Display teacher turnover rate in the tooltip
-        "Salary_Teachers:Q"  # Display average salary in the tooltip
+        "DISTNAME:N",
+        "Experience_Range:N",
+        "Turnover_Teachers:Q",
+        "Salary_Teachers:Q",
+        "Avg_Turnover:Q",
+        "Avg_Salary:Q"
     ]
 ).properties(
     title="Teacher Turnover Rate by Teacher's Years of Experience and Salary",
     width=500,
     height=400
 ).configure_axis(
-    labelFontSize=14,  # Font size for axis labels
-    titleFontSize=16  # Font size for axis titles
+    labelFontSize=14,
+    titleFontSize=16
 ).configure_legend(
-    titleFontSize=14,  # Font size for legend title
-    labelFontSize=12  # Font size for legend labels
+    titleFontSize=14,
+    labelFontSize=12
 )
 
-# Step 3: Show the Bubble Chart
+# Show the bubble chart
 bubble_chart_2.show()
 
-# Save
+# Save the chart
 bubble_chart_2.save('bubble_teacher_exp_turnover.png', format='png')
 
-```
+# Count districts above and below the category's average salary
+above_avg_count = len(filtered_df[filtered_df["Salary_Teachers"] > filtered_df["Avg_Salary"]])
+below_avg_count = len(filtered_df[filtered_df["Salary_Teachers"] <= filtered_df["Avg_Salary"]])
 
-
-```{python}
-df_filtered = df[
-    (df['Experience_Range'] == "6 to 10") | 
-    (df['Experience_Range'] == "11 to 15")
-]
-
-print(df_filtered['Years_Experience_Teachers'].mean())
+# Print the results
+print(f"Number of districts above the category's average salary: {above_avg_count}")
+print(f"Number of districts below the category's average salary: {below_avg_count}")
+print(f"Region's average: {df['Salary_Teachers'].mean()}")
 ```
