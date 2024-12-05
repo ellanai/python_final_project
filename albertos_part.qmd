@@ -46,12 +46,27 @@ high_turnover = merged[merged['Turnover_Teachers'] > 30]
 
 # Step 2: Plot the choropleth map
 fig, ax = plt.subplots(1, 1, figsize=(12, 8))
-merged.plot(column='Turnover_Teachers', cmap='YlOrRd', legend=True, ax=ax, edgecolor='black')
+
+# Define the maximum value for the legend
+max_value = merged['Turnover_Teachers'].max()
+
+# Add the plot with customized legend
+merged.plot(
+    column='Turnover_Teachers', 
+    cmap='YlOrRd', 
+    legend=True, 
+    ax=ax, 
+    edgecolor='black',
+    legend_kwds={
+        'label': f"Teacher Turnover Rate (%)\n(Max: {max_value:.1f}%)",
+        'orientation': "vertical"
+    }
+)
 
 # Step 3: Overlay district names
 for x, y, label in zip(high_turnover.geometry.centroid.x, 
                        high_turnover.geometry.centroid.y, 
-                       high_turnover['DISTNAME']):  # Replace 'DISTNAME' with the column for district names
+                       high_turnover['DISTNAME']):
     ax.text(x, y, label, fontsize=10, ha='center', color='black', weight='bold')
 
 # Step 4: Add title and other customizations
@@ -64,28 +79,55 @@ plt.show()
 
 ```
 
-
-4. Ranking chart: Districts with high teacher turnover and students outcomes
 ```{python}
-filtered_df = df[df['Turnover_Teachers'] > 30]
+high_turnover_df = df[df['Turnover_Teachers'] > 30]
 
-# Reshape the DataFrame using pd.melt()
-reshaped_df = pd.melt(
-    filtered_df,  # Replace df with the name of your DataFrame
-    id_vars=["DISTRICT_N", "DISTNAME"],  # Columns to keep (district identifiers)
-    value_vars=["All_Math_District_Meets", "All_ELA_District_Meets"],  # Columns to reshape
-    var_name="TEST",  # New column name for the reshaped variables
-    value_name="PERCENTAGE_STUDENTS"  # New column name for the values
+high_turnover_df = pd.melt(
+    high_turnover_df,
+    id_vars=["DISTRICT_N", "DISTNAME"],
+    value_vars=["All_Math_District_Meets", "All_ELA_District_Meets"],
+    var_name="TEST",
+    value_name="PERCENTAGE_STUDENTS"
 )
 
 # Rename values for better readability
-reshaped_df["TEST"] = reshaped_df["TEST"].replace({
+high_turnover_df["TEST"] = high_turnover_df["TEST"].replace({
     "All_Math_District_Meets": "Math",
     "All_ELA_District_Meets": "ELA"
 })
 
+rest_avg = df[df['Turnover_Teachers'] <= 30]
+
+# Reshape the DataFrame using pd.melt()
+reshaped_rest_avg = pd.melt(
+    rest_avg,
+    id_vars=["DISTRICT_N", "DISTNAME"],  # Keep district identifiers
+    value_vars=["All_Math_District_Meets", "All_ELA_District_Meets"],  # Reshape Math and ELA columns
+    var_name="TEST",  # Column to indicate test type
+    value_name="PERCENTAGE_STUDENTS"  # Column for percentage of students
+)
+
+# Calculate the average percentage for Math and ELA
+average_math = reshaped_rest_avg[reshaped_rest_avg["TEST"] == "All_Math_District_Meets"]["PERCENTAGE_STUDENTS"].mean()
+average_ela = reshaped_rest_avg[reshaped_rest_avg["TEST"] == "All_ELA_District_Meets"]["PERCENTAGE_STUDENTS"].mean()
+
+# Create a new DataFrame with the label "Rest" and the averages
+rest_row = pd.DataFrame({
+    "DISTRICT_N": ["Rest", "Rest"],  # Repeat "Rest" for both rows
+    "DISTNAME": ["Rest", "Rest"],   # Repeat "Rest" for both rows
+    "TEST": ["Math", "ELA"],        # Separate rows for Math and ELA
+    "PERCENTAGE_STUDENTS": [average_math, average_ela]  # Corresponding averages
+})
+
+# Append the "Rest" row to the reshaped DataFrame
+filtered_df = pd.concat([high_turnover_df, rest_row], ignore_index=True)
+```
+
+
+4. Ranking chart: Districts with high teacher turnover and students outcomes
+```{python}
 # Create a bubble chart using Altair
-bubble_chart = alt.Chart(reshaped_df).mark_circle().encode(
+bubble_chart = alt.Chart(filtered_df).mark_circle().encode(
     x=alt.X(
         "TEST:N",
         title="Percentage of Students Meeting Grade Level in Math and ELA",
@@ -99,11 +141,12 @@ bubble_chart = alt.Chart(reshaped_df).mark_circle().encode(
     size=alt.Size(
         "PERCENTAGE_STUDENTS:Q",
         title="Percentage of Students Meeting Grade Level",
+        scale=alt.Scale(domain=[10, 60], range=[20, 1500]), 
         legend=alt.Legend(
             title="Percentage Range",
             orient="right",
             titleFontSize=14,
-            values=[10, 40, 60, 80, 100],
+            values=[10, 15, 20, 30, 40, 60],
             symbolStrokeColor="black",  
             symbolFillColor="white",   
             symbolStrokeWidth=1.5      
@@ -224,4 +267,14 @@ bubble_chart_2.show()
 # Save
 bubble_chart_2.save('bubble_teacher_exp_turnover.png', format='png')
 
+```
+
+
+```{python}
+df_filtered = df[
+    (df['Experience_Range'] == "6 to 10") | 
+    (df['Experience_Range'] == "11 to 15")
+]
+
+print(df_filtered['Years_Experience_Teachers'].mean())
 ```
