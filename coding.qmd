@@ -339,4 +339,58 @@ years_STAAR_scatter.save('pictures\years_STAAR_scatter.png', format='png')
 ## 2.3 Choropleth
 path = r"Data\Raw\school_shp\School_Districts_2024.shp"
 gdf = gpd.read_file(path)
+
+# Merge
+## First, we renamed our variable for the merge
+df.rename(columns={"DISTRICT": "DISTRICT_N"}, inplace=True)
+
+# Perform the merge
+merged = gpd.GeoDataFrame(
+    pd.merge(df, gdf, on="DISTRICT_N", how="inner")
+)
+
+merged = merged.drop_duplicates(subset=['DISTRICT_N'], keep='first')
+
+# Calculate and print the average turnover for districts below 30%
+below_30_avg_turnover = merged[merged['Turnover_Teachers'] <= 30]['Turnover_Teachers'].mean()
+print(f"Average Teacher Turnover Rate for districts below 30%: {below_30_avg_turnover:.2f}%")
+
+#Choropleth
+
+# Step 1: Filter districts with turnover higher than 30%
+high_turnover = merged[merged['Turnover_Teachers'] > 30]
+
+# Step 2: Plot the choropleth map
+fig, ax = plt.subplots(1, 1, figsize=(12, 8))
+
+# Define the maximum value for the legend
+max_value = merged['Turnover_Teachers'].max()
+
+# Add the plot with customized legend
+merged.plot(
+    column='Turnover_Teachers', 
+    cmap='YlOrRd', 
+    legend=True, 
+    ax=ax, 
+    edgecolor='black',
+    legend_kwds={
+        'label': f"Teacher Turnover Rate (%)\n(Max: {max_value:.1f}%)",
+        'orientation': "vertical"
+    }
+)
+
+# Step 3: Overlay district names
+for x, y, label in zip(high_turnover.geometry.centroid.x, 
+                       high_turnover.geometry.centroid.y, 
+                       high_turnover['DISTNAME']):
+    ax.text(x, y, label, fontsize=10, ha='center', color='black', weight='bold')
+
+# Step 4: Add title and other customizations
+ax.set_title("Teacher Turnover Rate by District (Turnover > 30%)", fontsize=16)
+ax.axis('off')
+
+# Save
+plt.savefig('map_teacher_turnover.png', format='png', bbox_inches='tight')
+plt.show()
+
 ```
