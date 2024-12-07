@@ -335,6 +335,12 @@ years_STAAR_scatter = years_STAAR_scatter + regression_line
 years_STAAR_scatter.save('pictures\years_STAAR_scatter.png', format='png')
 ```
 
+```{python}
+path = r"Data\Raw\school_shp\School_Districts_2024.shp"
+gdf = gpd.read_file(path)
+print(gdf.head())
+```
+
 ```{python plot 3, echo=FALSE}
 ## 2.3 Choropleth
 path = r"Data\Raw\school_shp\School_Districts_2024.shp"
@@ -355,8 +361,7 @@ merged = merged.drop_duplicates(subset=['DISTRICT_N'], keep='first')
 below_30_avg_turnover = merged[merged['Turnover_Teachers'] <= 30]['Turnover_Teachers'].mean()
 print(f"Average Teacher Turnover Rate for districts below 30%: {below_30_avg_turnover:.2f}%")
 
-#Choropleth
-
+#Now, for the choropleth
 # Step 1: Filter districts with turnover higher than 30%
 high_turnover = merged[merged['Turnover_Teachers'] > 30]
 
@@ -390,7 +395,5 @@ ax.set_title("Teacher Turnover Rate by District (Turnover > 30%)", fontsize=16)
 ax.axis('off')
 
 # Save
-plt.savefig('map_teacher_turnover.png', format='png', bbox_inches='tight')
-plt.show()
-
+plt.savefig('pictures\map_teacher_turnover.png', format='png', bbox_inches='tight')
 ```
