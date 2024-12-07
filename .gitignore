@@ -7,3 +7,4 @@ __pycache__/
 *.pyo
 .DS_Store
 .env
+final_project_files/
