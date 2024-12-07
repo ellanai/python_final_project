@@ -4,7 +4,7 @@ from shinywidgets import render_altair, output_widget
 import altair as alt
 import numpy as np
 
-path = r"/Users/evylanai/Documents/GitHub/python_final_project/df.csv"
+path = "/Users/evylanai/Documents/GitHub/python_final_project/df.csv"
 df = pd.read_csv(path)
 # Add a column for the >20% new teachers condition
 df['>20 Percent New Teachers'] = df['Experience_None'] >= 20
@@ -100,6 +100,9 @@ def server(input, output, session):
         ).configure_axis(
             titleFontSize=18,
             labelFontSize=14
+        ).configure_legend(
+            titleFontSize=18,
+            labelFontSize=20
         )
 
 # Create the Shiny app
