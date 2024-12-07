@@ -1,0 +1,41 @@
+---
+title: "Examining the Link Between Teacher Characteristics and Student Test Scores:
+Evidence from Texas ESC Region 20"
+author: "Alberto Saldarriaga (GitHub: albertomasv) & Evy Lanai (GitHub: ellanai)"
+format:
+  html:
+    code: false
+---
+
+
+In our project, we decided to look at the correlation between teacher characteristics (such as years of experience, types of degree held, salary, and turnover rates) and student test score outcomes. We aimed to determine which teacher attributes were most predictive of student achievement and consider what polices districts could implement to promote these attributes. We hypothesized that two indicators of higher quality teachers would be years of experience and holding an advanced degree, since both of these generally mean that the teacher has a greater knowledge depth of the content and how to manage a classroom.
+
+We use public data from Texas Education Service Center Region 20 to complete our project, accessed through the Texas Education Agency (TEA) website. Our district-level shapefile also came from TEA. We decided to focus on one region of Texas in order to keep our findings more precise, and the region around San Antonio offers a rich diversity of backgrounds, ranging from very urban to very rural, with diversity in race, immigrant status, English Learner status, and socioeconomic background as well. Our data was only district level, providing 58 data points for each of our variables; this is one weakness of our project because our wealth of data was limited. In hindsight, it would have been more precise had we used school-level data instead of district data, but we anticipate that we would see very similar trends regardless. Additionally, we had difficulty deciding which indicators to pull from TEA because there are hundreds available for each district, so we had to individually pull the codes only for the relevant variables, which took some time.
+
+We first demonstrated the correlation between students test scores and teacher attributes in our shiny dashboard, and we chose to look at average teacher years of experience per district versus the percentage of students meeting grade level in math or reading tests. This made most sense to do in a dashboard because it allowed us to compare the effects across different demographic groups more easily, since we allowed the user to toggle between student race, economically disadvantaged status, English Learner status, and special education status. We found that all groups showed a positive correlation between teacher years of experience and test scores, in both math and reading.
+
+Next, we compared looked at percentage of teachers with Master’s degrees (the second most likely education accreditation after Bachelor’s degree for teachers in Region 20) and its link to student test scores. Ultimately, we found a stronger correlation between student outcomes and teacher years of experience than percentage of teachers holding a Master’s degree, emphasizing the importance of districts retaining teachers because they get more valuable over the years. See below for the graphs on both these correlations (left: years of experience; right: percentage holding advanced degrees).
+
+```{python}
+from IPython.display import HTML, Image, display
+display(HTML(f"""
+<div style="display: flex; justify-content: space-around;">
+    <div>
+        <img src="/Users/evylanai/Documents/GitHub/python_final_project/years_STAAR_scatter.png" style="width: 100%; height: auto;">
+    </div>
+    <div>
+        <img src="/Users/evylanai/Documents/GitHub/python_final_project/masters_STAAR_scatter.png" style="width: 100%; height: auto;">
+    </div>
+</div>
+"""))
+```
+
+
+
+
+
+
+
+
+
+
