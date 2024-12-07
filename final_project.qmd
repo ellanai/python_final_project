@@ -1,35 +1,15 @@
 ---
-title: "3058 Final Project: How Teacher Characteristics Correlate with Student Test Scores. Evidence from Texas ESC Region 20"
-author: "Evy Lanai & Alberto Saldarriaga"
-date: "`r format(Sys.Date(), '%B %d, %Y')`"
-format: 
-  pdf:
-    include-in-header: 
-       text: |
-         \usepackage{fvextra}
-         \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
-include-before-body:
-  text: |
-    \RecustomVerbatimEnvironment{verbatim}{Verbatim}{
-      showspaces = false,
-      showtabs = false,
-      breaksymbolleft={},
-      breaklines
-    }
-output:
+title: "Examining the Link Between Teacher Characteristics and Student Test Scores:
+Evidence from Texas ESC Region 20"
+author: "Alberto Saldarriaga (GitHub: albertomasv, Section 4) & Evy Lanai (GitHub: ellanai, Section 4)"
+format: html
+
+execute: 
   echo: false
-  eval: false
 ---
 
-## Packages
-
-```{bash}
-pip install -r requirements.txt
-```
-
+```{python packages, echo=false}
 ## Loading packages
-
-```{python}
 import pandas as pd
 import altair as alt
 import geopandas as gpd
@@ -40,27 +20,24 @@ import numpy as np
 
 import warnings
 # Suppress specific FutureWarnings
-warnings.filterwarnings("ignore", category=FutureWarning)
+warnings.filterwarnings("ignore") 
 ```
 
-```{python loading the dfs, echo=FALSE}
+```{python loading the dfs, echo=false}
 ## 1. Data Wrangling
 
 ## 1.1 Data Wrangling
 #Institutional outcomes (class size/absenteesm)
 path = r"Data\Raw\student\DSTUD.xlsx"
 df_students = pd.read_excel(path)
-print(df_students.columns) #To confirm variables names
 
 #Staff outcomes (teacher characteristics)
 path = r"Data\Raw\staff\DSTAF.xlsx"
 df_staff = pd.read_excel(path) 
-print(df_staff.columns) #To confirm variables names
 
 #Student outcomes (test scores)
 path = r"Data\Raw\staar\DSTAAR_ALL.xlsx"
 df_staar = pd.read_excel(path)
-print(df_staar.columns) #To confirm variables names
 ```
 
 ```{python merging, echo=FALSE}
@@ -285,7 +262,7 @@ regression_line = alt.Chart(df).transform_fold(
 
 masters_STAAR_scatter = masters_STAAR_scatter + regression_line
 
-# Save and show plot
+# Save plot
 masters_STAAR_scatter.save(r'pictures\masters_STAAR_scatter.png', format='png')
 ```
 
@@ -331,7 +308,7 @@ regression_line = alt.Chart(df).transform_fold(
 
 years_STAAR_scatter = years_STAAR_scatter + regression_line
 
-# Save and show plot
+# Save plot
 years_STAAR_scatter.save(r'pictures\years_STAAR_scatter.png', format='png')
 ```
 
@@ -339,7 +316,6 @@ years_STAAR_scatter.save(r'pictures\years_STAAR_scatter.png', format='png')
 ## 2.3 Choropleth
 path = r"Data\Raw\school_shp\School_Districts_2024.shp"
 gdf = gpd.read_file(path)
-print(gdf.head()) #To double-check that all the variables are there
 
 # Merge
 ## First, we renamed our variable for the merge
@@ -352,9 +328,8 @@ merged = gpd.GeoDataFrame(
 
 merged = merged.drop_duplicates(subset=['DISTRICT_N'], keep='first')
 
-# Calculate and print the average turnover for districts below 30%
+# Calculate the average turnover for districts below 30%
 below_30_avg_turnover = merged[merged['Turnover_Teachers'] <= 30]['Turnover_Teachers'].mean()
-print(f"Average Teacher Turnover Rate for districts below 30%: {below_30_avg_turnover:.2f}%")
 
 #Now, for the choropleth
 # Step 1: Filter districts with turnover higher than 30%
@@ -390,7 +365,8 @@ ax.set_title("Teacher Turnover Rate by District (Turnover > 30%)", fontsize=16)
 ax.axis('off')
 
 # Save
-plt.savefig(r'pictures\map_teacher_turnover.png', format='png', bbox_inches='tight')
+plt.savefig(r'pictures\map_teacher_turnover.png', format='png')
+plt.close()
 ```
 
 ```{python plot 4, echo=FALSE}
@@ -503,8 +479,6 @@ bubble_chart = alt.Chart(filtered_df).mark_circle().encode(
     strokeOpacity=0  
 )
 
-bubble_chart.show()
-
 # Save
 bubble_chart.save(r'pictures\bubble_ranking_districts.png', format='png')
 ```
@@ -608,20 +582,12 @@ bubble_chart_2 = alt.Chart(filtered_df).mark_circle().encode(
     labelFontSize=12
 )
 
-# Show the bubble chart
-bubble_chart_2.show()
-
 # Save the chart
 bubble_chart_2.save(r'pictures\bubble_teacher_exp_turnover.png', format='png')
 
 # Count districts above and below the category's average salary
 above_avg_count = len(filtered_df[filtered_df["Salary_Teachers"] > filtered_df["Avg_Salary"]])
 below_avg_count = len(filtered_df[filtered_df["Salary_Teachers"] <= filtered_df["Avg_Salary"]])
-
-# Print the results
-print(f"Number of districts above the category's average salary: {above_avg_count}")
-print(f"Number of districts below the category's average salary: {below_avg_count}")
-print(f"Region's average: {df['Salary_Teachers'].mean()}")
 ```
 
 Our project examines the correlation between teacher characteristics (years of experience, types of degree held, salary, and turnover rates) and student test score outcomes in Texas. We aimed to determine which teacher attributes were most predictive of student achievement and consider what polices districts could implement to promote these attributes. 
