@@ -21,77 +21,9 @@ path = r"/Users/evylanai/Documents/GitHub/python_final_project/df.csv"
 df = pd.read_csv(path)
 ```
 
-Scatter plot for teacher degrees vs. STAAR math scores
 ```{python}
-# Combine Bachelor's and Master's in a single chart
-degrees_math_scatter = alt.Chart(df).transform_fold(
-    ['Teachers_Bachelors', 'Teachers_Masters'],  
-    as_=['Degree_Type', 'Percentage'] 
-).transform_calculate(
-    Degree_Type_Label=alt.expr.if_(
-        alt.datum.Degree_Type == 'Teachers_Bachelors',
-        '% of Teachers with Bachelors',
-        '% of Teachers with Masters'
-    )
-).mark_circle(size=50).encode(
-    x=alt.X('Percentage:Q', title='% Teachers with Degree'),
-    y=alt.Y('All_Math_District_Meets:Q', title='% of Students Meeting Grade Level in Math'),
-    color=alt.Color(
-        'Degree_Type_Label:N',  
-        scale=alt.Scale(range=['blue', 'green']), 
-        legend=alt.Legend(title='Degree Type')
-    ),
-    tooltip=['Degree_Type_Label:N', 'Percentage:Q', 'All_Math_District_Meets:Q']
-).properties(
-    title='Math Proficiency vs. Teachers with Bachelor\'s vs. Master\'s Degrees',
-    width=600,
-    height=400
-).configure_title(
-    fontSize=20
-)
-
-# Save and show plot
-degrees_math_scatter.save('degrees_math_scatter.png', format='png')
-degrees_math_scatter
-```
-
-
-Scatter plot for teacher degrees vs. STAAR ELA scores
-```{python}
-# Combine Bachelor's and Master's in a single chart
-degrees_ELA_scatter = alt.Chart(df).transform_fold(
-    ['Teachers_Bachelors', 'Teachers_Masters'],  
-    as_=['Degree_Type', 'Percentage'] 
-).transform_calculate(
-    Degree_Type_Label=alt.expr.if_(
-        alt.datum.Degree_Type == 'Teachers_Bachelors',
-        '% of Teachers with Bachelors',
-        '% of Teachers with Masters'
-    )
-).mark_circle(size=50).encode(
-    x=alt.X('Percentage:Q', title='% Teachers with Degree'),  
-    y=alt.Y('All_ELA_District_Meets:Q', title='% of Students Meeting Grade Level in Reading'),
-    color=alt.Color(
-        'Degree_Type_Label:N',  
-        scale=alt.Scale(range=['blue', 'green']), 
-        legend=alt.Legend(title='Degree Type')
-    ),
-    tooltip=['Degree_Type_Label:N', 'Percentage:Q', 'All_ELA_District_Meets:Q']
-).properties(
-    title='Reading Proficiency vs. Teachers with Bachelor\'s vs. Master\'s Degrees',
-    width=600,
-    height=400
-).configure_title(
-    fontSize=20
-)
-
-# Save and show plot
-degrees_ELA_scatter.save('degrees_ELA_scatter.png', format='png')
-degrees_ELA_scatter
-```
-
-Show correlation with Master's degree posession and STAAR scores
-```{python}
+# Show correlation with Master's degree 
+# posession and STAAR scores
 masters_STAAR_scatter = alt.Chart(df).transform_fold(
     ['All_ELA_District_Meets', 'All_Math_District_Meets'], 
     as_=['Subject', 'Percentage_Meeting_Grade_Level']
@@ -135,11 +67,11 @@ masters_STAAR_scatter = masters_STAAR_scatter + regression_line
 
 # Save and show plot
 masters_STAAR_scatter.save('masters_STAAR_scatter.png', format='png')
-masters_STAAR_scatter
 ```
 
-Show correlation with teacher years ov experience and math and reading STAAR scores
 ```{python}
+# Show correlation with teacher years of experience 
+# and math and reading STAAR scores
 years_STAAR_scatter = alt.Chart(df).transform_fold(
     ['All_ELA_District_Meets', 'All_Math_District_Meets'], 
     as_=['Subject', 'Percentage_Meeting_Grade_Level']
@@ -182,46 +114,8 @@ years_STAAR_scatter = years_STAAR_scatter + regression_line
 
 # Save and show plot
 years_STAAR_scatter.save('years_STAAR_scatter.png', format='png')
-years_STAAR_scatter
 ```
 
 
-
-
-
-
-
-Scatterplot for math and reading STAAR scores vs. % of teachers with no degrees
-```{python}
-nodegree_STAAR_scatter = alt.Chart(df).transform_fold(
-    ['All_ELA_District_Meets', 'All_Math_District_Meets'], 
-    as_=['Subject', 'Percentage_Meeting_Grade_Level']
-).transform_calculate(
-    Subject_Label=alt.expr.if_(
-        alt.datum.Subject == 'All_ELA_District_Meets',
-        'Reading',  
-        'Math' 
-    )
-).mark_circle(size=50).encode(
-    x=alt.X('Teachers_NoDegree:Q', title='% Teachers with No Degree'),  # X-axis
-    y=alt.Y('Percentage_Meeting_Grade_Level:Q', title='% of Students Meeting Grade Level'),
-    color=alt.Color(
-        'Subject_Label:N',  
-        scale=alt.Scale(range=['red', 'blue']),  
-        legend=alt.Legend(title='Subject')
-    ),
-    tooltip=['Subject_Label:N', 'Teachers_NoDegree:Q', 'Percentage_Meeting_Grade_Level:Q']
-).properties(
-    title='Student Proficiency vs. % Teachers with No Degree (ELA & Math)',
-    width=600,
-    height=400
-).configure_title(
-    fontSize=20
-)
-
-# Save and show plot
-nodegree_STAAR_scatter.save('nodegree_STAAR_scatter.png', format='png')
-nodegree_STAAR_scatter
-```
 
 
