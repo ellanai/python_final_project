@@ -1,0 +1,73 @@
+---
+title: "3058 Final Project: How Teacher Characteristics Correlate with Student Test Scores. Evidence from Texas ESC Region 20"
+author: "Evy Lanai & Alberto Saldarriaga"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+format: 
+  pdf:
+    include-in-header: 
+       text: |
+         \usepackage{fvextra}
+         \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+include-before-body:
+  text: |
+    \RecustomVerbatimEnvironment{verbatim}{Verbatim}{
+      showspaces = false,
+      showtabs = false,
+      breaksymbolleft={},
+      breaklines
+    }
+output:
+  echo: false
+  eval: false
+---
+
+## Packages
+
+```{bash}
+pip install -r requirements.txt
+```
+
+## Loading packages
+
+```{python}
+import pandas as pd
+import altair as alt
+import geopandas as gpd
+import matplotlib.pyplot as plt
+from shiny import App, render, ui
+from shinywidgets import render_altair, output_widget
+import numpy as np
+
+import warnings
+# Suppress specific FutureWarnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+```
+
+## 1. Data Wrangling
+
+```{python loading the dfs, echo=FALSE}
+#Institutional outcomes (class size/absenteesm)
+path = r"Data\Raw\student\DSTUD.xlsx"
+df_students = pd.read_excel(path)
+print(df_students.columns) #To confirm variables names
+
+#Staff outcomes (teacher characteristics)
+path = r"Data\Raw\staff\DSTAF.xlsx"
+df_staff = pd.read_excel(path) 
+print(df_staff.columns) #To confirm variables names
+
+#Student outcomes (test scores)
+path = r"Data\Raw\staar\DSTAAR_ALL.xlsx"
+df_staar = pd.read_excel(path)
+print(df_staar.columns) #To confirm variables names
+```
+
+```{python}
+
+```
+
+## 2. Plotting
+
+```{python}
+
+```
